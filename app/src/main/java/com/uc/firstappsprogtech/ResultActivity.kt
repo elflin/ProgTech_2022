@@ -3,13 +3,14 @@ package com.uc.firstappsprogtech
 import Database.GlobalVar
 import Model.User
 import android.app.Activity
-import android.app.Instrumentation
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import com.uc.firstappsprogtech.databinding.ActivityResultBinding
+
 
 class ResultActivity : AppCompatActivity() {
 
@@ -20,6 +21,7 @@ class ResultActivity : AppCompatActivity() {
         if (it.resultCode == Activity.RESULT_OK){   // APLIKASI GALLERY SUKSES MENDAPATKAN IMAGE
             val uri = it.data?.data                 // GET PATH TO IMAGE FROM GALLEY
             viewBind.pictureImageview.setImageURI(uri)  // MENAMPILKAN DI IMAGE VIEW
+            GlobalVar.listDataUser[position].imageUri = uri.toString()
         }
     }
 
@@ -33,13 +35,13 @@ class ResultActivity : AppCompatActivity() {
 
     private fun Listener(){
         viewBind.pictureImageview.setOnClickListener{
-            val myIntent = Intent(Intent.ACTION_PICK)
+            val myIntent = Intent(Intent.ACTION_OPEN_DOCUMENT)
             myIntent.type = "image/*"
             GetResult.launch(myIntent)
         }
 
         viewBind.pictureFab.setOnClickListener{
-            val myIntent = Intent(Intent.ACTION_PICK)
+            val myIntent = Intent(Intent.ACTION_OPEN_DOCUMENT)
             myIntent.type = "image/*"
             GetResult.launch(myIntent)
         }
@@ -76,6 +78,14 @@ class ResultActivity : AppCompatActivity() {
         viewBind.NoTelpTextView.text = user.no_telp
         viewBind.EmailTextView.text = user.email
         viewBind.PasswordTextView.text = user.password
+        if (user.imageUri.isNotEmpty()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                baseContext.getContentResolver().takePersistableUriPermission(Uri.parse(user.imageUri),
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                )
+            }
+            viewBind.pictureImageview.setImageURI(Uri.parse(user.imageUri))
+        }
     }
 
 }
