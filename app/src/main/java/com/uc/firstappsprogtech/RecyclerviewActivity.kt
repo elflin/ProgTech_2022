@@ -30,16 +30,16 @@ class RecyclerviewActivity : AppCompatActivity() {
     }
 
     private fun addDummyData(){
-        listDataUser.add(User("Marcel", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
-        listDataUser.add(User("Marcel", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
-        listDataUser.add(User("Marcel", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
-        listDataUser.add(User("Marcel", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
-        listDataUser.add(User("Marcel", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
-        listDataUser.add(User("Marcel", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
-        listDataUser.add(User("Marcel", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
-        listDataUser.add(User("Marcel", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
-        listDataUser.add(User("Marcel", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
-        listDataUser.add(User("Marcel", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
+        listDataUser.add(User("Marcel1", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
+        listDataUser.add(User("Marcel2", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
+        listDataUser.add(User("Marcel3", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
+        listDataUser.add(User("Marcel4", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
+        listDataUser.add(User("Marcel5", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
+        listDataUser.add(User("Marcel6", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
+        listDataUser.add(User("Marcel7", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
+        listDataUser.add(User("Marcel8", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
+        listDataUser.add(User("Marcel9", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
+        listDataUser.add(User("Marcel10", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
 
         adapter.notifyDataSetChanged()
     }
