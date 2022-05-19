@@ -1,5 +1,6 @@
 package com.uc.firstappsprogtech
 
+import Database.GlobalVar
 import Model.User
 import android.app.Activity
 import android.app.Instrumentation
@@ -13,6 +14,7 @@ import com.uc.firstappsprogtech.databinding.ActivityResultBinding
 class ResultActivity : AppCompatActivity() {
 
     private lateinit var viewBind:ActivityResultBinding
+    private var position = -1
 
     private val GetResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
         if (it.resultCode == Activity.RESULT_OK){   // APLIKASI GALLERY SUKSES MENDAPATKAN IMAGE
@@ -41,15 +43,32 @@ class ResultActivity : AppCompatActivity() {
             myIntent.type = "image/*"
             GetResult.launch(myIntent)
         }
-    }
 
-    private fun GetIntent(){
-        val user  = intent.getParcelableExtra<User>("DataUser")
-        if (user != null) {
-            Display(user)
+        viewBind.DeleteButton.setOnClickListener{
+            GlobalVar.listDataUser.removeAt(position)
+            finish()
+        }
+
+        viewBind.EditButton.setOnClickListener{
+            val myIntent = Intent(this, FormActivity::class.java).apply {
+                putExtra("position", position)
+            }
+
+            startActivity(myIntent)
         }
     }
 
+    private fun GetIntent(){
+        position = intent.getIntExtra("position", -1)
+        val user = GlobalVar.listDataUser[position]
+        Display(user)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val user = GlobalVar.listDataUser[position]
+        Display(user)
+    }
 
     private fun Display(user:User){
         viewBind.NamaTextView.text = user.nama

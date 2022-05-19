@@ -1,5 +1,6 @@
 package com.uc.firstappsprogtech
 
+import Database.GlobalVar
 import Model.User
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
@@ -11,12 +12,30 @@ class FormActivity : AppCompatActivity() {
 
     private lateinit var viewBind: ActivityFormBinding
     private lateinit var user:User
+    private var position = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewBind = ActivityFormBinding.inflate(layoutInflater)
         setContentView(viewBind.root)
+        GetIntent()
         Listener()
+    }
+
+    private fun GetIntent() {
+        position = intent.getIntExtra("position", -1)
+        if(position != -1){
+            val user = GlobalVar.listDataUser[position]
+            Display(user)
+        }
+    }
+
+    private fun Display(user:User){
+        viewBind.NamaTextInputLayout.editText?.setText(user.nama)
+        viewBind.AlamatTextInputLayout.editText?.setText(user.alamat)
+        viewBind.TeleponTextInputLayout.editText?.setText(user.no_telp)
+        viewBind.EmailTextInputLayout.editText?.setText(user.email)
+        viewBind.PasswordTextInputLayout.editText?.setText(user.password)
     }
 
     private fun Listener(){
@@ -94,11 +113,13 @@ class FormActivity : AppCompatActivity() {
         }
 
         if (isCompleted){
-            val myIntent = Intent(this, ResultActivity::class.java).apply {
-                putExtra("DataUser", user)
-                putExtra("Display", "Yes suksess")
+            if (position == -1){
+                GlobalVar.listDataUser.add(user)
             }
-            startActivity(myIntent)
+            else{
+                GlobalVar.listDataUser[position] = user
+            }
+            finish()
         }
     }
 

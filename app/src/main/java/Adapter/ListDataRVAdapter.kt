@@ -1,5 +1,6 @@
 package Adapter
 
+import Interface.CardListener
 import Model.User
 import android.net.Uri
 import android.view.LayoutInflater
@@ -9,18 +10,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.uc.firstappsprogtech.R
 import com.uc.firstappsprogtech.databinding.CardUserBinding
 
-class ListDataRVAdapter(val listUser: ArrayList<User>):
+class ListDataRVAdapter(val listUser: ArrayList<User>, val cardListener: CardListener):
     RecyclerView.Adapter<ListDataRVAdapter.viewHolder>() {
 
-    class viewHolder (itemView: View): RecyclerView.ViewHolder(itemView) {
-        //Bind
-        val binding = CardUserBinding.bind(itemView)
+    class viewHolder (val itemView: View, val cardListener1: CardListener): RecyclerView.ViewHolder(itemView) {
 
-        // Ext
-//        val nama_card = itemView.namaCard
-//        val email_card = itemView.emailCard
-//        val alamat_card = itemView.alamat_card
-//        val picture_card = itemView.picture_card
+        val binding = CardUserBinding.bind(itemView)
 
         fun setData(data: User){
             binding.namaCard.text = data.nama
@@ -28,14 +23,17 @@ class ListDataRVAdapter(val listUser: ArrayList<User>):
             binding.alamatCard.text = data.alamat
             if(data.imageUri.isNotEmpty())
                 binding.pictureCard.setImageURI(Uri.parse(data.imageUri))
-        }
 
+            itemView.setOnClickListener{
+                cardListener1.onCardClick(adapterPosition)
+            }
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): viewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         val view = layoutInflater.inflate(R.layout.card_user, parent, false)
-        return viewHolder(view)
+        return viewHolder(view, cardListener)
     }
 
     override fun onBindViewHolder(holder: viewHolder, position: Int) {
