@@ -20,6 +20,13 @@ class ResultActivity : AppCompatActivity() {
     private val GetResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
         if (it.resultCode == Activity.RESULT_OK){   // APLIKASI GALLERY SUKSES MENDAPATKAN IMAGE
             val uri = it.data?.data                 // GET PATH TO IMAGE FROM GALLEY
+            if (uri != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    baseContext.getContentResolver().takePersistableUriPermission(uri,
+                           Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                       )
+                }
+            }
             viewBind.pictureImageview.setImageURI(uri)  // MENAMPILKAN DI IMAGE VIEW
             GlobalVar.listDataUser[position].imageUri = uri.toString()
         }
@@ -79,11 +86,6 @@ class ResultActivity : AppCompatActivity() {
         viewBind.EmailTextView.text = user.email
         viewBind.PasswordTextView.text = user.password
         if (user.imageUri.isNotEmpty()) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                baseContext.getContentResolver().takePersistableUriPermission(Uri.parse(user.imageUri),
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                )
-            }
             viewBind.pictureImageview.setImageURI(Uri.parse(user.imageUri))
         }
     }
