@@ -19,6 +19,7 @@ data class User (
     ) {
     }
 
+    var id: Int = -1
     var imageUri: String = ""
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {

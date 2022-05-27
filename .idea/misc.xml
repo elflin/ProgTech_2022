@@ -5,12 +5,18 @@
       <map>
         <entry key="../../../../../layout/custom_preview.xml" value="0.3851282051282051" />
         <entry key="app/src/main/res/drawable/bottom_corner_rounded_blue.xml" value="0.1735" />
+        <entry key="app/src/main/res/layout/activity_botnav.xml" value="0.30867892261650276" />
         <entry key="app/src/main/res/layout/activity_example1.xml" value="0.3645833333333333" />
         <entry key="app/src/main/res/layout/activity_form.xml" value="0.2992731936725096" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.2992731936725096" />
         <entry key="app/src/main/res/layout/activity_recyclerview.xml" value="0.2992731936725096" />
         <entry key="app/src/main/res/layout/activity_result.xml" value="0.2992731936725096" />
         <entry key="app/src/main/res/layout/card_user.xml" value="0.2992731936725096" />
+        <entry key="app/src/main/res/layout/fragment_book.xml" value="0.30867892261650276" />
+        <entry key="app/src/main/res/layout/fragment_burger.xml" value="0.30867892261650276" />
+        <entry key="app/src/main/res/layout/fragment_mail.xml" value="0.30867892261650276" />
+        <entry key="app/src/main/res/layout/fragment_phone.xml" value="0.30867892261650276" />
+        <entry key="app/src/main/res/menu/bottom_nav_menu.xml" value="0.30782385634886705" />
       </map>
     </option>
   </component>
