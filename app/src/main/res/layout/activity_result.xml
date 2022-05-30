@@ -37,6 +37,7 @@
                 android:id="@+id/picture_imageview"
                 android:layout_width="150dp"
                 android:layout_height="150dp"
+                android:scaleType="centerCrop"
                 app:srcCompat="@drawable/ic_dark_profile" />
 
         </LinearLayout>

@@ -2,18 +2,26 @@ package com.uc.firstappsprogtech
 
 import Adapter.ListDataRVAdapter
 import Database.GlobalVar
+import Database.VolleySingleton
 import Interface.CardListener
 import Model.User
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.android.volley.Request
+import com.android.volley.Response
+import com.android.volley.toolbox.JsonObjectRequest
 import com.uc.firstappsprogtech.databinding.ActivityRecyclerviewBinding
+import org.json.JSONArray
+import org.json.JSONObject
 
 class RecyclerviewActivity : AppCompatActivity(), CardListener {
 
@@ -26,13 +34,13 @@ class RecyclerviewActivity : AppCompatActivity(), CardListener {
         setContentView(viewBind.root)
         CheckPermissions()
         setupRecyclerView()
-        addDummyData()
         listener()
     }
 
     override fun onResume() {
         super.onResume()
-        adapter.notifyDataSetChanged()
+        GlobalVar.listDataUser.clear()
+        loadFromDB()
     }
 
     private fun CheckPermissions() {
@@ -75,19 +83,31 @@ class RecyclerviewActivity : AppCompatActivity(), CardListener {
         viewBind.listDataRV.adapter = adapter   // Set adapter
     }
 
-    private fun addDummyData(){
-        GlobalVar.listDataUser.add(User("Marcel1", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
-        GlobalVar.listDataUser.add(User("Marcel2", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
-        GlobalVar.listDataUser.add(User("Marcel3", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
-        GlobalVar.listDataUser.add(User("Marcel4", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
-        GlobalVar.listDataUser.add(User("Marcel5", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
-        GlobalVar.listDataUser.add(User("Marcel6", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
-        GlobalVar.listDataUser.add(User("Marcel7", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
-        GlobalVar.listDataUser.add(User("Marcel8", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
-        GlobalVar.listDataUser.add(User("Marcel9", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
-        GlobalVar.listDataUser.add(User("Marcel10", "Citraland1", "08112345", "marcel@gmail.com", "Asdf1234"))
+    @SuppressLint("NotifyDataSetChanged")
+    private fun loadFromDB(){
+        val request = JsonObjectRequest(Request.Method.GET, GlobalVar.ReadAllData, null,
+            {
+                val jsonArray = it.getJSONArray("data")
+                for(i in 0 until jsonArray.length()){
+                    val jsonObj = jsonArray.getJSONObject(i)
+                    val user = User(
+                        jsonObj.getString("nama"),
+                        jsonObj.getString("alamat"),
+                        jsonObj.getString("no_telp"),
+                        jsonObj.getString("email"),
+                        jsonObj.getString("password") ,
+                        jsonObj.getInt("id"),
+                        jsonObj.getString("pictureArray")
+                    )
+                    GlobalVar.listDataUser.add(user)
+                }
+                adapter.notifyDataSetChanged()
+            }, {
+                it.printStackTrace()
+            }
+        )
 
-        adapter.notifyDataSetChanged()
+        VolleySingleton.getInstance(this).addToRequestQueue(request)
     }
 
     override fun onCardClick(position: Int) {

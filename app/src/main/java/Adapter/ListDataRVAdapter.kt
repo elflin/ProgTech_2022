@@ -1,8 +1,11 @@
 package Adapter
 
+import Database.GlobalVar
 import Interface.CardListener
 import Model.User
+import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,11 +24,19 @@ class ListDataRVAdapter(val listUser: ArrayList<User>, val cardListener: CardLis
             binding.namaCard.text = data.nama
             binding.emailCard.text = data.email
             binding.alamatCard.text = data.alamat
-            if(data.imageUri.isNotEmpty()) {
-                binding.pictureCard.setImageURI(Uri.parse(data.imageUri))
+            if(data.imageString != "null") {
+                val bArray = GlobalVar.StringToByteArr(data.imageString)
+                binding.pictureCard.setImageBitmap(
+                    BitmapFactory.decodeByteArray(
+                        bArray,
+                        0,
+                        bArray.size
+                    )
+                )
             }
             itemView.setOnClickListener{
-                cardListener1.onCardClick(adapterPosition)
+                Log.d("UserID", data.id.toString())
+                cardListener1.onCardClick(data.id)
             }
         }
     }

@@ -1,28 +1,61 @@
 package com.uc.firstappsprogtech
 
 import Database.GlobalVar
+import Database.VolleySingleton
 import Model.User
+import android.R.attr.bitmap
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.android.volley.Request
+import com.android.volley.toolbox.JsonObjectRequest
 import com.uc.firstappsprogtech.databinding.ActivityResultBinding
+import org.json.JSONObject
+import java.nio.ByteBuffer
 
 
 class ResultActivity : AppCompatActivity() {
 
     private lateinit var viewBind:ActivityResultBinding
     private var position = -1
+    private lateinit var user:User
+    private var imageData: ByteArray? = null
 
     private val GetResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
         if (it.resultCode == Activity.RESULT_OK){   // APLIKASI GALLERY SUKSES MENDAPATKAN IMAGE
             val uri = it.data?.data                 // GET PATH TO IMAGE FROM GALLEY
-            viewBind.pictureImageview.setImageURI(uri)  // MENAMPILKAN DI IMAGE VIEW
-            GlobalVar.listDataUser[position].imageUri = uri.toString()
+            if (uri != null) {
+                createImageData(uri)
+            }
         }
+    }
+
+    private fun createImageData(uri: Uri) {
+        val inputStream = contentResolver.openInputStream(uri)
+        inputStream?.buffered()?.use {
+            imageData = it.readBytes()
+            viewBind.pictureImageview.setImageBitmap(BitmapFactory.decodeByteArray(imageData, 0, imageData!!.size))
+            user.imageString = GlobalVar.ByteArrToString(resizeImage())
+            updateDatatoDB()
+        }
+    }
+
+    private fun resizeImage(): ByteArray {
+        val bmp = BitmapFactory.decodeByteArray(imageData, 0, imageData!!.size);
+        val height = 100
+        val width = bmp.width * height / bmp.height
+        val resized = Bitmap.createScaledBitmap(bmp, width.toInt(), height.toInt(), true);
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(resized.getByteCount())
+        resized.copyPixelsToBuffer(byteBuffer)
+        byteBuffer.rewind()
+        return byteBuffer.array()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,20 +68,19 @@ class ResultActivity : AppCompatActivity() {
 
     private fun Listener(){
         viewBind.pictureImageview.setOnClickListener{
-            val myIntent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+            val myIntent = Intent(Intent.ACTION_PICK)
             myIntent.type = "image/*"
             GetResult.launch(myIntent)
         }
 
         viewBind.pictureFab.setOnClickListener{
-            val myIntent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+            val myIntent = Intent(Intent.ACTION_PICK)
             myIntent.type = "image/*"
             GetResult.launch(myIntent)
         }
 
         viewBind.DeleteButton.setOnClickListener{
-            GlobalVar.listDataUser.removeAt(position)
-            finish()
+            DeleteData()
         }
 
         viewBind.EditButton.setOnClickListener{
@@ -62,30 +94,101 @@ class ResultActivity : AppCompatActivity() {
 
     private fun GetIntent(){
         position = intent.getIntExtra("position", -1)
-        val user = GlobalVar.listDataUser[position]
-        Display(user)
     }
 
     override fun onResume() {
         super.onResume()
-        val user = GlobalVar.listDataUser[position]
-        Display(user)
+        getDataFromDB()
     }
 
-    private fun Display(user:User){
+    private fun Display(){
         viewBind.NamaTextView.text = user.nama
         viewBind.AlamatTextView.text = user.alamat
         viewBind.NoTelpTextView.text = user.no_telp
         viewBind.EmailTextView.text = user.email
         viewBind.PasswordTextView.text = user.password
-        if (user.imageUri.isNotEmpty()) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                baseContext.getContentResolver().takePersistableUriPermission(Uri.parse(user.imageUri),
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+        if(user.imageString != "null") {
+            val bArray = GlobalVar.StringToByteArr(user.imageString)
+            viewBind.pictureImageview.setImageBitmap(
+                BitmapFactory.decodeByteArray(
+                    bArray,
+                    0,
+                    bArray.size
                 )
-            }
-            viewBind.pictureImageview.setImageURI(Uri.parse(user.imageUri))
+            )
         }
+    }
+
+    private fun updateDatatoDB(){
+        val obj = JSONObject()
+        obj.put("id", user.id)
+        obj.put("nama", user.nama)
+        obj.put("alamat", user.alamat)
+        obj.put("no_telp", user.no_telp)
+        obj.put("email", user.email)
+        obj.put("password", user.password)
+        obj.put("pictureArray", user.imageString)
+
+        val request = JsonObjectRequest(Request.Method.POST, GlobalVar.UpdateData, obj,
+            {
+                val message = it.getString("Message")
+                if (message == "Success"){
+                    Toast.makeText(this, "Update Success", Toast.LENGTH_SHORT).show()
+                }else{
+                    Toast.makeText(this, "Update Failed", Toast.LENGTH_SHORT).show()
+                }
+            },{
+                it.printStackTrace()
+            }
+        )
+
+        VolleySingleton.getInstance(this).addToRequestQueue(request)
+    }
+
+    private fun getDataFromDB(){
+        val obj = JSONObject()
+        obj.put("id", position)
+
+        val request = JsonObjectRequest(Request.Method.POST, GlobalVar.ReadByIdData, obj,
+            {
+                val jObj = it.getJSONObject("data")
+                user = User(
+                    jObj.getString("nama"),
+                    jObj.getString("alamat"),
+                    jObj.getString("no_telp"),
+                    jObj.getString("email"),
+                    jObj.getString("password"),
+                    jObj.getInt("id"),
+                    jObj.getString("pictureArray")
+                )
+                Display()
+            },{
+                it.printStackTrace()
+            }
+        )
+
+        VolleySingleton.getInstance(this).addToRequestQueue(request)
+    }
+
+    private fun DeleteData(){
+        val obj = JSONObject()
+        obj.put("id", position)
+
+        val request = JsonObjectRequest(Request.Method.POST, GlobalVar.DeleteData, obj,
+            {
+                if(it.getString("message") == "Delete success"){
+                    Toast.makeText(this, "Delete Success", Toast.LENGTH_SHORT).show()
+                    finish()
+                }else{
+                    Toast.makeText(this, "Delete Failed", Toast.LENGTH_SHORT).show()
+                }
+            },{
+                it.printStackTrace()
+            }
+        )
+
+        VolleySingleton.getInstance(this).addToRequestQueue(request)
+
     }
 
 }

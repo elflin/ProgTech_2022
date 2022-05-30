@@ -66,6 +66,7 @@
                     android:id="@+id/picture_card"
                     android:layout_width="80dp"
                     android:layout_height="80dp"
+                    android:scaleType="centerCrop"
                     app:srcCompat="@drawable/ic_dark_profile" />
 
             </androidx.cardview.widget.CardView>
