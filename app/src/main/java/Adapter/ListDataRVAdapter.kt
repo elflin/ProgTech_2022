@@ -4,7 +4,6 @@ import Database.GlobalVar
 import Interface.CardListener
 import Model.User
 import android.graphics.BitmapFactory
-import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -26,13 +25,18 @@ class ListDataRVAdapter(val listUser: ArrayList<User>, val cardListener: CardLis
             binding.alamatCard.text = data.alamat
             if(data.imageString != "null") {
                 val bArray = GlobalVar.StringToByteArr(data.imageString)
-                binding.pictureCard.setImageBitmap(
-                    BitmapFactory.decodeByteArray(
-                        bArray,
-                        0,
-                        bArray.size
-                    )
+
+                val options = BitmapFactory.Options()
+                options.inSampleSize = 2
+                options.inScaled = true
+
+                val bitMap = BitmapFactory.decodeByteArray(
+                    bArray,
+                    0,
+                    bArray.size,
+                    options
                 )
+                binding.pictureCard.setImageBitmap(bitMap)
             }
             itemView.setOnClickListener{
                 Log.d("UserID", data.id.toString())

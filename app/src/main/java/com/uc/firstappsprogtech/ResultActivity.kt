@@ -41,21 +41,9 @@ class ResultActivity : AppCompatActivity() {
         val inputStream = contentResolver.openInputStream(uri)
         inputStream?.buffered()?.use {
             imageData = it.readBytes()
-            viewBind.pictureImageview.setImageBitmap(BitmapFactory.decodeByteArray(imageData, 0, imageData!!.size))
-            user.imageString = GlobalVar.ByteArrToString(resizeImage())
+            user.imageString = GlobalVar.ByteArrToString(imageData!!)
             updateDatatoDB()
         }
-    }
-
-    private fun resizeImage(): ByteArray {
-        val bmp = BitmapFactory.decodeByteArray(imageData, 0, imageData!!.size);
-        val height = 100
-        val width = bmp.width * height / bmp.height
-        val resized = Bitmap.createScaledBitmap(bmp, width.toInt(), height.toInt(), true);
-        val byteBuffer: ByteBuffer = ByteBuffer.allocate(resized.getByteCount())
-        resized.copyPixelsToBuffer(byteBuffer)
-        byteBuffer.rewind()
-        return byteBuffer.array()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -109,13 +97,16 @@ class ResultActivity : AppCompatActivity() {
         viewBind.PasswordTextView.text = user.password
         if(user.imageString != "null") {
             val bArray = GlobalVar.StringToByteArr(user.imageString)
-            viewBind.pictureImageview.setImageBitmap(
-                BitmapFactory.decodeByteArray(
-                    bArray,
-                    0,
-                    bArray.size
-                )
+            val options = BitmapFactory.Options()
+            options.inSampleSize = 1
+            options.inScaled = true
+            val bitMap = BitmapFactory.decodeByteArray(
+                bArray,
+                0,
+                bArray.size,
+                options
             )
+            viewBind.pictureImageview.setImageBitmap(bitMap)
         }
     }
 
@@ -134,6 +125,7 @@ class ResultActivity : AppCompatActivity() {
                 val message = it.getString("Message")
                 if (message == "Success"){
                     Toast.makeText(this, "Update Success", Toast.LENGTH_SHORT).show()
+                    getDataFromDB()
                 }else{
                     Toast.makeText(this, "Update Failed", Toast.LENGTH_SHORT).show()
                 }
