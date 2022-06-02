@@ -1,27 +1,33 @@
 package com.uc.firstappsprogtech
 
 import Database.GlobalVar
+import Database.VolleySingleton
 import Model.User
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.android.volley.Request
+import com.android.volley.toolbox.JsonObjectRequest
 import com.uc.firstappsprogtech.databinding.ActivityResultBinding
+import org.json.JSONObject
 
 
 class ResultActivity : AppCompatActivity() {
 
     private lateinit var viewBind:ActivityResultBinding
     private var position = -1
+    private lateinit var user:User
 
     private val GetResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
         if (it.resultCode == Activity.RESULT_OK){   // APLIKASI GALLERY SUKSES MENDAPATKAN IMAGE
             val uri = it.data?.data                 // GET PATH TO IMAGE FROM GALLEY
             viewBind.pictureImageview.setImageURI(uri)  // MENAMPILKAN DI IMAGE VIEW
-            GlobalVar.listDataUser[position].imageUri = uri.toString()
+
         }
     }
 
@@ -47,7 +53,7 @@ class ResultActivity : AppCompatActivity() {
         }
 
         viewBind.DeleteButton.setOnClickListener{
-            GlobalVar.listDataUser.removeAt(position)
+            DeleteData()
             finish()
         }
 
@@ -60,32 +66,74 @@ class ResultActivity : AppCompatActivity() {
         }
     }
 
+    private fun DeleteData() {
+        val jObj = JSONObject()
+        jObj.put("id", position)
+
+        val request = JsonObjectRequest(
+            Request.Method.POST,
+            GlobalVar.DeleteUser,
+            jObj,
+            {
+
+            },
+            {
+                Toast.makeText(this, "Network Error", Toast.LENGTH_LONG).show()
+                it.printStackTrace()
+            }
+        )
+
+        VolleySingleton.getInstance(this).addToRequestQueue(request)
+    }
+
     private fun GetIntent(){
         position = intent.getIntExtra("position", -1)
-        val user = GlobalVar.listDataUser[position]
-        Display(user)
     }
 
     override fun onResume() {
         super.onResume()
-        val user = GlobalVar.listDataUser[position]
-        Display(user)
+        ReadFromDB()
     }
 
-    private fun Display(user:User){
+    private fun ReadFromDB() {
+        val jObj = JSONObject()
+        jObj.put("id", position)
+
+        val request = JsonObjectRequest(
+            Request.Method.POST,
+            GlobalVar.ReadByID,
+            jObj,
+            {
+                val jsonObj = it.getJSONObject("data")
+
+                user = User(
+                    jsonObj.getInt("id"),
+                    jsonObj.getString("nama"),
+                    jsonObj.getString("alamat"),
+                    jsonObj.getString("no_telp"),
+                    jsonObj.getString("email"),
+                    jsonObj.getString("password"),
+                    jsonObj.getString("imageString")
+                )
+
+                Display()
+            },
+            {
+                Toast.makeText(this, "Network Error", Toast.LENGTH_LONG).show()
+                it.printStackTrace()
+            }
+        )
+
+        VolleySingleton.getInstance(this).addToRequestQueue(request)
+    }
+
+    private fun Display(){
         viewBind.NamaTextView.text = user.nama
         viewBind.AlamatTextView.text = user.alamat
         viewBind.NoTelpTextView.text = user.no_telp
         viewBind.EmailTextView.text = user.email
         viewBind.PasswordTextView.text = user.password
-        if (user.imageUri.isNotEmpty()) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                baseContext.getContentResolver().takePersistableUriPermission(Uri.parse(user.imageUri),
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                )
-            }
-            viewBind.pictureImageview.setImageURI(Uri.parse(user.imageUri))
-        }
+
     }
 
 }

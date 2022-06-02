@@ -21,11 +21,8 @@ class ListDataRVAdapter(val listUser: ArrayList<User>, val cardListener: CardLis
             binding.namaCard.text = data.nama
             binding.emailCard.text = data.email
             binding.alamatCard.text = data.alamat
-            if(data.imageUri.isNotEmpty()) {
-                binding.pictureCard.setImageURI(Uri.parse(data.imageUri))
-            }
             itemView.setOnClickListener{
-                cardListener1.onCardClick(adapterPosition)
+                cardListener1.onCardClick(data.id)
             }
         }
     }

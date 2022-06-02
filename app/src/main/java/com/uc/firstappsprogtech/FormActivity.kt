@@ -1,12 +1,17 @@
 package com.uc.firstappsprogtech
 
 import Database.GlobalVar
+import Database.VolleySingleton
 import Model.User
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Patterns
+import android.widget.Toast
+import com.android.volley.Request
+import com.android.volley.toolbox.JsonObjectRequest
 import com.uc.firstappsprogtech.databinding.ActivityFormBinding
+import org.json.JSONObject
 
 class FormActivity : AppCompatActivity() {
 
@@ -25,12 +30,43 @@ class FormActivity : AppCompatActivity() {
     private fun GetIntent() {
         position = intent.getIntExtra("position", -1)
         if(position != -1){
-            val user = GlobalVar.listDataUser[position]
-            Display(user)
+            ReadFromDB()
         }
     }
 
-    private fun Display(user:User){
+    private fun ReadFromDB() {
+        val jObj = JSONObject()
+        jObj.put("id", position)
+
+        val request = JsonObjectRequest(
+            Request.Method.POST,
+            GlobalVar.ReadByID,
+            jObj,
+            {
+                val jsonObj = it.getJSONObject("data")
+
+                user = User(
+                    jsonObj.getInt("id"),
+                    jsonObj.getString("nama"),
+                    jsonObj.getString("alamat"),
+                    jsonObj.getString("no_telp"),
+                    jsonObj.getString("email"),
+                    jsonObj.getString("password"),
+                    jsonObj.getString("imageString")
+                )
+
+                Display()
+            },
+            {
+                Toast.makeText(this, "Network Error", Toast.LENGTH_LONG).show()
+                it.printStackTrace()
+            }
+        )
+
+        VolleySingleton.getInstance(this).addToRequestQueue(request)
+    }
+
+    private fun Display(){
         viewBind.NamaTextInputLayout.editText?.setText(user.nama)
         viewBind.AlamatTextInputLayout.editText?.setText(user.alamat)
         viewBind.TeleponTextInputLayout.editText?.setText(user.no_telp)
@@ -46,8 +82,15 @@ class FormActivity : AppCompatActivity() {
             var email = viewBind.EmailTextInputLayout.editText?.text.toString().trim()
             var password = viewBind.PasswordTextInputLayout.editText?.text.toString().trim()
 
-            user = User(nama, alamat, no_telp, email, password)
-
+            if(user != null){
+                user.nama = nama
+                user.alamat = alamat
+                user.no_telp = no_telp
+                user.email = email
+                user.password = password
+            }else {
+                user = User(-1, nama, alamat, no_telp, email, password, "")
+            }
             checker()
         }
     }
@@ -114,14 +157,69 @@ class FormActivity : AppCompatActivity() {
 
         if (isCompleted){
             if (position == -1){
-                GlobalVar.listDataUser.add(user)
+                CreateData()
             }
             else{
-                GlobalVar.listDataUser[position] = user
+                UpdateData()
             }
             finish()
         }
     }
 
+    private fun UpdateData(){
+        val jObj = JSONObject()
+        jObj.put("nama", user.nama)
+        jObj.put("alamat", user.alamat)
+        jObj.put("no_telp", user.no_telp)
+        jObj.put("email", user.email)
+        jObj.put("password", user.password)
+        jObj.put("id", user.id)
+        jObj.put("imageString", user.imageString)
+
+        val request = JsonObjectRequest(
+            Request.Method.POST,
+            GlobalVar.UpdateUser,
+            jObj,
+            {
+                val message = it.getString("message")
+                if(message == "success"){
+                    Toast.makeText(this, "Data successfully updated", Toast.LENGTH_LONG).show()
+                }
+            },
+            {
+                Toast.makeText(this, "Network Error", Toast.LENGTH_LONG).show()
+                it.printStackTrace()
+            }
+        )
+
+        VolleySingleton.getInstance(this).addToRequestQueue(request)
+    }
+
+    private fun CreateData(){
+        val jObj = JSONObject()
+        jObj.put("nama", user.nama)
+        jObj.put("alamat", user.alamat)
+        jObj.put("no_telp", user.no_telp)
+        jObj.put("email", user.email)
+        jObj.put("password", user.password)
+
+        val request = JsonObjectRequest(
+            Request.Method.POST,
+            GlobalVar.CreateUser,
+            jObj,
+            {
+                val message = it.getString("message")
+                if(message == "success"){
+                    Toast.makeText(this, "Data successfully created", Toast.LENGTH_LONG).show()
+                }
+            },
+            {
+                Toast.makeText(this, "Network Error", Toast.LENGTH_LONG).show()
+                it.printStackTrace()
+            }
+        )
+
+        VolleySingleton.getInstance(this).addToRequestQueue(request)
+    }
 
 }
